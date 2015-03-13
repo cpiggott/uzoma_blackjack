@@ -1,5 +1,8 @@
 package com.sample.blackjack.blackjack;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -78,7 +81,6 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
             firstCard = (TextView) rootView.findViewById(R.id.input1);
             secondCard = (TextView) rootView.findViewById(R.id.input2);
             thirdCard = (TextView) rootView.findViewById(R.id.input3);
@@ -124,6 +126,11 @@ public class MainActivity extends ActionBarActivity {
             return rootView;
         }
 
+        @Override
+        public void onResume() {
+            super.onResume();
+            resetGame();
+        }
 
         private void determineWinner(){
             if(scoreUser > 21 || (scoreComputer > scoreUser && scoreComputer < 21)){
@@ -135,7 +142,7 @@ public class MainActivity extends ActionBarActivity {
             } else {
                 Toast.makeText(getActivity(), "We missed something! " + Integer.toString(scoreUser) + " Comp. Score: " + Integer.toString(scoreComputer), Toast.LENGTH_LONG).show();
             }
-            resetGame();
+            endGameQuestion();//Asks the user if they would like to play again or not.
 
         }
 
@@ -143,9 +150,35 @@ public class MainActivity extends ActionBarActivity {
             scoreUser = 0;
             scoreComputer = 0;
             turn = 1;
+            endTurnButton.setEnabled(false);
             firstCard.setText("First Card");
             secondCard.setText("Second Card");
             thirdCard.setText("Third Card");
+        }
+
+        private void endGameQuestion(){
+            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+            alert.setTitle("Do you want to play again?");
+            // alert.setMessage("Message");
+
+            alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    resetGame();
+                }
+            });
+
+            alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    Fragment newFragment = ScoreFragment.newInstance(scoreUser);// Instance
+                    FragmentTransaction transaction = getFragmentManager()
+                            .beginTransaction();
+                    transaction.replace(R.id.container, newFragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+                }
+            });
+
+            alert.show();
         }
 
 
